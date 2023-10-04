@@ -74,9 +74,9 @@ resource "aws_eip" "eip_02" {
   domain = "vpc"
 }
 
-resource "aws_nat_gateway" "nate_gateway_01" {
-  allocation_id = aws_eip.eip_01
-  subnet_id     = aws_subnet.public_subnet_01
+resource "aws_nat_gateway" "nat_gateway_01" {
+  allocation_id = aws_eip.eip_01.id
+  subnet_id     = aws_subnet.public_subnet_01.id
 
   tags = {
     Name = "${var.project_name}-${var.env}-01"
@@ -87,9 +87,9 @@ resource "aws_nat_gateway" "nate_gateway_01" {
   depends_on = [aws_internet_gateway.internet_gateway]
 }
 
-resource "aws_nat_gateway" "nate_gateway_02" {
-  allocation_id = aws_eip.eip_02
-  subnet_id     = aws_subnet.public_subnet_02
+resource "aws_nat_gateway" "nat_gateway_02" {
+  allocation_id = aws_eip.eip_02.id
+  subnet_id     = aws_subnet.public_subnet_02.id
 
   tags = {
     Name = "${var.project_name}-${var.env}-02"
@@ -104,7 +104,7 @@ resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.internet_gateway
+    gateway_id = aws_internet_gateway.internet_gateway.id
   }
 }
 
@@ -112,7 +112,7 @@ resource "aws_route_table" "private_route_table_01" {
   vpc_id = aws_vpc.vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nate_gateway_01
+    nat_gateway_id = aws_nat_gateway.nat_gateway_01.id
   }
 }
 
@@ -120,28 +120,28 @@ resource "aws_route_table" "private_route_table_02" {
   vpc_id = aws_vpc.vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nate_gateway_02
+    nat_gateway_id = aws_nat_gateway.nat_gateway_02.id
   }
 }
 
 resource "aws_route_table_association" "route_table_association_p01" {
-  subnet_id = aws_subnet.public_subnet_01
-  route_table_id = aws_route_table.public_route_table
+  subnet_id = aws_subnet.public_subnet_01.id
+  route_table_id = aws_route_table.public_route_table.id
 }
 
 resource "aws_route_table_association" "route_table_association_p02" {
-  subnet_id = aws_subnet.public_subnet_02
-  route_table_id = aws_route_table.public_route_table
+  subnet_id = aws_subnet.public_subnet_02.id
+  route_table_id = aws_route_table.public_route_table.id
 }
 
 resource "aws_route_table_association" "route_table_association_i01" {
-  subnet_id = aws_subnet.private_subnet_01
-  route_table_id = aws_route_table.private_route_table_01
+  subnet_id = aws_subnet.private_subnet_01.id
+  route_table_id = aws_route_table.private_route_table_01.id
 }
 
 resource "aws_route_table_association" "route_table_association_i02" {
-  subnet_id = aws_subnet.private_subnet_02
-  route_table_id = aws_route_table.private_route_table_02
+  subnet_id = aws_subnet.private_subnet_02.id
+  route_table_id = aws_route_table.private_route_table_02.id
 }
 
 resource "aws_security_group" "cluster_sg" {
