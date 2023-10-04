@@ -1,0 +1,65 @@
+name: Terraform rollback to previous commit SHA
+
+run-name: Rollback AWS infrastructures on ${{ inputs.env }} environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prd
+      sha:
+        description: 'Target commit SHA'
+        required: true
+        type: string
+
+jobs:
+    rollback:
+      runs-on: ubuntu-latest
+      environment: ${{ inputs.env }}
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        DYNAMODB_LOCK_TABLE_NAME: ${{ vars.PROJECT_NAME }}-state-lock-table-${{ inputs.env }}
+        S3_BUCKET_NAME: ${{ vars.PROJECT_NAME }}-state-${{ inputs.env }}
+        TF_VAR_region: ${{ vars.AWS_REGION }}
+        TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+        TF_VAR_env: ${{ inputs.env }}
+      steps:
+        - name: Source checkout
+          uses: actions/checkout@v4
+          with:
+            ref: ${{ inputs.sha }}
+
+        - name: Setup terraform
+          uses: hashicorp/setup-terraform@v2
+
+        - name: Terraform fmt
+          id: fmt
+          run: terraform fmt -check
+          continue-on-error: true
+
+        - name: Terraform initialize
+          id: init
+          run: |
+            echo "bucket = \"${{ env.S3_BUCKET_NAME }}\"" > config.s3.tfbackend
+            echo "key = \"tstate/terraform.tfstate\"" >> config.s3.tfbackend
+            echo "region = \"${{ env.AWS_REGION }}\"" >> config.s3.tfbackend
+            echo "encrypt = true" >> config.s3.tfbackend
+            echo "dynamodb_table = \"${{ env.DYNAMODB_LOCK_TABLE_NAME }}\"" >> config.s3.tfbackend
+            terraform init -input=false -backend-config=config.s3.tfbackend
+
+        - name: Terraform validate
+          id: validate
+          run: terraform validate -no-color
+
+        - name: Terraform plan and apply
+          id: plan
+          run: |
+            terraform plan -input=false -no-color
+            terraform apply -input=false -auto-approve

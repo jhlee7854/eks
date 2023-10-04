@@ -1,0 +1,116 @@
+name: Terraform plan
+
+run-name: Create terraform plan to AWS infrastructures on ${{ (github.base_ref == 'develop' && 'dev') || (github.base_ref == 'main' && 'prd') }} environment
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    environment: ${{ (github.base_ref == 'develop' && 'dev') || (github.base_ref == 'main' && 'prd') }}
+    permissions:
+      pull-requests: write
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      DYNAMODB_LOCK_TABLE_NAME: ${{ vars.PROJECT_NAME }}-state-lock-table-${{ (github.base_ref == 'develop' && 'dev') || (github.base_ref == 'main' && 'prd') }}
+      S3_BUCKET_NAME: ${{ vars.PROJECT_NAME }}-state-${{ (github.base_ref == 'develop' && 'dev') || (github.base_ref == 'main' && 'prd') }}
+      TF_VAR_region: ${{ vars.AWS_REGION }}
+      TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+      TF_VAR_env: ${{ (github.base_ref == 'develop' && 'dev') || (github.base_ref == 'main' && 'prd') }}
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform initialize
+        id: init
+        run: |
+          echo "bucket = \"${{ env.S3_BUCKET_NAME }}\"" > config.s3.tfbackend
+          echo "key = \"tstate/terraform.tfstate\"" >> config.s3.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.s3.tfbackend
+          echo "encrypt = true" >> config.s3.tfbackend
+          echo "dynamodb_table = \"${{ env.DYNAMODB_LOCK_TABLE_NAME }}\"" >> config.s3.tfbackend
+          terraform init -input=false -backend-config=config.s3.tfbackend
+
+      - name: Terraform validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform plan
+        id: plan
+        run: terraform plan -input=false -no-color
+        continue-on-error: true
+
+      - name: Update pull request
+        uses: actions/github-script@v6
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
