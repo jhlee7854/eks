@@ -4,9 +4,6 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
   enable_dns_support = true
   instance_tenancy = "default"
-  tags = {
-    "Name" = "${var.project_name}-${var.env}"
-  }
 }
 
 resource "aws_subnet" "public_subnet_01" {
@@ -59,19 +56,22 @@ resource "aws_subnet" "private_subnet_02" {
 
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.vpc.id
-  tags = {
-    "Name" = "${var.project_name}-${var.env}"
-  }
 }
 
 resource "aws_eip" "eip_01" {
   public_ipv4_pool = "amazon"
   domain = "vpc"
+  tags = {
+    "Name" = "${var.project_name}-${var.env}-eip01"
+  }
 }
 
 resource "aws_eip" "eip_02" {
   public_ipv4_pool = "amazon"
   domain = "vpc"
+  tags = {
+    "Name" = "${var.project_name}-${var.env}-eip02"
+  }
 }
 
 resource "aws_nat_gateway" "nat_gateway_01" {
@@ -106,6 +106,9 @@ resource "aws_route_table" "public_route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.internet_gateway.id
   }
+  tags = {
+    "Name" = "${var.project_name}-${var.env}-p"
+  }
 }
 
 resource "aws_route_table" "private_route_table_01" {
@@ -114,6 +117,9 @@ resource "aws_route_table" "private_route_table_01" {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gateway_01.id
   }
+  tags = {
+    "Name" = "${var.project_name}-${var.env}-i01"
+  }
 }
 
 resource "aws_route_table" "private_route_table_02" {
@@ -121,6 +127,9 @@ resource "aws_route_table" "private_route_table_02" {
   route {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gateway_02.id
+  }
+  tags = {
+    "Name" = "${var.project_name}-${var.env}-i02"
   }
 }
 
@@ -148,7 +157,4 @@ resource "aws_security_group" "cluster_sg" {
   name = "cluster-sg"
   description = "Communication between the control plane and worker nodegroups"
   vpc_id = aws_vpc.vpc.id
-  tags = {
-    "Name" = "${var.project_name}-${var.env}"
-  }
 }
