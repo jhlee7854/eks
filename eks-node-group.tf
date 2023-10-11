@@ -8,6 +8,29 @@ resource "aws_iam_role" "iam_role_eks_node_group" {
       Principal = {
         Service = "ec2.amazonaws.com"
       }
+    },
+    {
+        "Sid": "MountpointFullBucketAccess",
+        "Effect": "Allow",
+        "Action": [
+            "s3:ListBucket"
+        ],
+        "Resource": [
+            "arn:aws:s3:ap-northeast-2:318374019075:eks-share"
+        ]
+    },
+    {
+        "Sid": "MountpointFullObjectAccess",
+        "Effect": "Allow",
+        "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:AbortMultipartUpload",
+            "s3:DeleteObject"
+        ],
+        "Resource": [
+            "arn:aws:s3:ap-northeast-2:318374019075:eks-share/*"
+        ]
     }]
     Version = "2012-10-17"
   })
@@ -47,7 +70,10 @@ resource "aws_eks_node_group" "app_node_group" {
     max_unavailable = 1
   }
 
-  instance_types = ["t3.medium"]
+  launch_template {
+    id = var.app_node_group_launch_template_id
+    version = var.app_node_group_launch_template_version
+  }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.
   # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
