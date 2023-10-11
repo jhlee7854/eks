@@ -27,7 +27,7 @@ resource "aws_iam_role_policy" "iam_role_policy_s3" {
             "s3:ListBucket"
         ]
         Resource = [
-            "arn:aws:s3:ap-northeast-2:318374019075:eks-share"
+            "arn:aws:s3:::eks-share"
         ]
       },
       {
@@ -40,7 +40,7 @@ resource "aws_iam_role_policy" "iam_role_policy_s3" {
               "s3:DeleteObject"
           ]
           Resource = [
-              "arn:aws:s3:ap-northeast-2:318374019075:eks-share/*"
+              "arn:aws:s3:::eks-share/*"
           ]
       }
     ]
