@@ -8,8 +8,19 @@ resource "aws_iam_role" "iam_role_eks_node_group" {
       Principal = {
         Service = "ec2.amazonaws.com"
       }
-    },
-    {
+    }]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_role_policy" "iam_role_policy_s3" {
+  name = "s3_policy"
+  role = aws_iam_role.iam_role_eks_node_group.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
         Sid = "MountpointFullBucketAccess"
         Effect = "Allow"
         Action = [
@@ -18,21 +29,21 @@ resource "aws_iam_role" "iam_role_eks_node_group" {
         Resource = [
             "arn:aws:s3:ap-northeast-2:318374019075:eks-share"
         ]
-    },
-    {
-        Sid = "MountpointFullObjectAccess"
-        Effect = "Allow"
-        Action = [
-            "s3:GetObject",
-            "s3:PutObject",
-            "s3:AbortMultipartUpload",
-            "s3:DeleteObject"
-        ]
-        Resource = [
-            "arn:aws:s3:ap-northeast-2:318374019075:eks-share/*"
-        ]
-    }]
-    Version = "2012-10-17"
+      },
+      {
+          Sid = "MountpointFullObjectAccess"
+          Effect = "Allow"
+          Action = [
+              "s3:GetObject",
+              "s3:PutObject",
+              "s3:AbortMultipartUpload",
+              "s3:DeleteObject"
+          ]
+          Resource = [
+              "arn:aws:s3:ap-northeast-2:318374019075:eks-share/*"
+          ]
+      }
+    ]
   })
 }
 
