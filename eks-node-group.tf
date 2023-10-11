@@ -10,25 +10,25 @@ resource "aws_iam_role" "iam_role_eks_node_group" {
       }
     },
     {
-        "Sid": "MountpointFullBucketAccess",
-        "Effect": "Allow",
-        "Action": [
+        Sid = "MountpointFullBucketAccess"
+        Effect = "Allow"
+        Action = [
             "s3:ListBucket"
-        ],
-        "Resource": [
+        ]
+        Resource = [
             "arn:aws:s3:ap-northeast-2:318374019075:eks-share"
         ]
     },
     {
-        "Sid": "MountpointFullObjectAccess",
-        "Effect": "Allow",
-        "Action": [
+        Sid = "MountpointFullObjectAccess"
+        Effect = "Allow"
+        Action = [
             "s3:GetObject",
             "s3:PutObject",
             "s3:AbortMultipartUpload",
             "s3:DeleteObject"
-        ],
-        "Resource": [
+        ]
+        Resource = [
             "arn:aws:s3:ap-northeast-2:318374019075:eks-share/*"
         ]
     }]
