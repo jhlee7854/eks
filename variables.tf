@@ -22,3 +22,11 @@ variable "eks_public_access_cidrs" {
     "0.0.0.0/0"
   ]
 }
+
+variable "app_node_group_launch_template_id" {
+  type = string
+}
+
+variable "app_node_group_launch_template_version" {
+  type = string
+}

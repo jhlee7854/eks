@@ -27,6 +27,8 @@ jobs:
       TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
       TF_VAR_env: ${{ inputs.env }}
       TF_VAR_eks_public_access_cidrs: ${{ vars.EKS_PUBLIC_ACCESS_CIDRS }}
+      TF_VAR_app_node_group_launch_template_id: ${{ vars.APP_NODE_GROUP_LAUNCH_TEMPLATE_ID }}
+      TF_VAR_app_node_group_launch_template_version: ${{ vars.APP_NODE_GROUP_LAUNCH_TEMPLATE_VERSION }}
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
