@@ -94,4 +94,8 @@ resource "aws_eks_node_group" "app_node_group" {
     aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
     aws_iam_role_policy.iam_role_policy_s3
   ]
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
 }
