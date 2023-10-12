@@ -23,7 +23,7 @@ variable "eks_public_access_cidrs" {
   ]
 }
 
-variable "app_node_group_launch_template_id" {
+variable "app_node_group_launch_template_name" {
   type = string
 }
 

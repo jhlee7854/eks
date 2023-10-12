@@ -82,7 +82,7 @@ resource "aws_eks_node_group" "app_node_group" {
   }
 
   launch_template {
-    id = var.app_node_group_launch_template_id
+    name = var.app_node_group_launch_template_name
     version = var.app_node_group_launch_template_version
   }
 
