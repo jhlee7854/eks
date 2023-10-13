@@ -62,6 +62,39 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
   role       = aws_iam_role.iam_role_eks_node_group.name
 }
 
+locals {
+  eks-app-node-userdata = <<USERDATA
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash -xe
+wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
+sudo yum install -y ./mount-s3.rpm
+mkdir -p ~/mnt/s3
+mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share ~/mnt/s3
+
+--==MYBOUNDARY==--
+USERDATA
+}
+
+resource "aws_launch_template" "app_node" {
+  instance_type          = "t3.medium"
+  key_name               = "mountpoint-s3"
+  name                   = "app_node_launch_template"
+  image_id               = "ami-09af799f87c7601fa"
+  user_data              = base64encode(local.eks-app-node-userdata)
+  vpc_security_group_ids = [aws_security_group.cluster_sg.id]
+  tag_specifications {
+    resource_type = "instance"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_eks_node_group" "app_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "app-node-group"
@@ -81,10 +114,10 @@ resource "aws_eks_node_group" "app_node_group" {
     max_unavailable = 1
   }
 
-  # launch_template {
-  #   name    = var.app_node_group_launch_template_name
-  #   version = var.app_node_group_launch_template_version
-  # }
+  launch_template {
+    id      = aws_launch_template.app_node.id
+    version = aws_launch_template.app_node.latest_version
+  }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.
   # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
