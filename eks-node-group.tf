@@ -71,6 +71,7 @@ Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash -xe
+sudo /etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.eks_cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks_cluster.certificate_authority[0].data}' '${aws_eks_cluster.eks_cluster.name}'
 wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
 sudo yum install -y ./mount-s3.rpm
 mkdir -p ~/mnt/s3
@@ -85,8 +86,8 @@ resource "aws_launch_template" "app_node" {
   key_name               = "mountpoint-s3"
   name                   = "app_node_launch_template"
   image_id               = "ami-09af799f87c7601fa"
-  # user_data              = base64encode(local.eks-app-node-userdata)
-  vpc_security_group_ids = [aws_security_group.cluster_sg.id]
+  user_data              = base64encode(local.eks-app-node-userdata)
+  vpc_security_group_ids = [aws_security_group.allnodes-sg.id]
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -128,7 +129,6 @@ resource "aws_eks_node_group" "app_node_group" {
     aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
-    aws_iam_role_policy.iam_role_policy_s3
   ]
 
   lifecycle {

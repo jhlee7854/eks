@@ -154,15 +154,11 @@ resource "aws_route_table_association" "route_table_association_i02" {
 }
 
 resource "aws_security_group" "cluster_sg" {
-  name        = "cluster-sg"
   description = "Communication between the control plane and worker nodegroups"
   vpc_id      = aws_vpc.vpc.id
+}
 
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
+resource "aws_security_group" "allnodes-sg" {
+  description = "Communication between all nodes in the cluster"
+  vpc_id      = aws_vpc.vpc.id
 }
