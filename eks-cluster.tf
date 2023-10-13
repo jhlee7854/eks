@@ -28,6 +28,23 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSVPCResourceController" {
   role       = aws_iam_role.iam_role_eks.name
 }
 
+resource "aws_security_group_rule" "culster_sg_ingress" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  source_security_group_id = aws_eks_cluster.eks_cluster.vpc_config[0].cluster_security_group_id
+  security_group_id        = aws_security_group.cluster_sg.id
+}
+
+resource "aws_security_group_rule" "culster_sg_egress" {
+  type                     = "egress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.cluster_sg.id
+}
+
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "${var.project_name}-${var.env}"
   role_arn = aws_iam_role.iam_role_eks.arn
