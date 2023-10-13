@@ -85,7 +85,7 @@ resource "aws_launch_template" "app_node" {
   key_name               = "mountpoint-s3"
   name                   = "app_node_launch_template"
   image_id               = "ami-09af799f87c7601fa"
-  user_data              = base64encode(local.eks-app-node-userdata)
+  # user_data              = base64encode(local.eks-app-node-userdata)
   vpc_security_group_ids = [aws_security_group.cluster_sg.id]
   tag_specifications {
     resource_type = "instance"
