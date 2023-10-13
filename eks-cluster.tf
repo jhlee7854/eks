@@ -38,11 +38,12 @@ resource "aws_security_group_rule" "culster_sg_ingress" {
 }
 
 resource "aws_security_group_rule" "culster_sg_egress" {
-  type                     = "egress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.cluster_sg.id
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.cluster_sg.id
 }
 
 resource "aws_eks_cluster" "eks_cluster" {
@@ -59,8 +60,8 @@ resource "aws_eks_cluster" "eks_cluster" {
     # endpoint_private_access = true
     # endpoint_public_access  = true
     # public_access_cidrs     = var.eks_public_access_cidrs
-    security_group_ids      = [aws_security_group.cluster_sg.id]
-    subnet_ids              = [aws_subnet.private_subnet_01.id, aws_subnet.private_subnet_02.id]
+    security_group_ids = [aws_security_group.cluster_sg.id]
+    subnet_ids         = [aws_subnet.private_subnet_01.id, aws_subnet.private_subnet_02.id]
   }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Cluster handling.
