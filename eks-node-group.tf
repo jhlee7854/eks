@@ -71,7 +71,7 @@ Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash -xe
-sudo /etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.eks_cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks_cluster.certificate_authority[0].data}' '${aws_eks_cluster.eks_cluster.name}'
+sudo /etc/eks/bootstrap.sh '${aws_eks_cluster.eks_cluster.name}' --apiserver-endpoint '${aws_eks_cluster.eks_cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks_cluster.certificate_authority[0].data}'
 wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
 sudo yum install -y ./mount-s3.rpm
 mkdir -p ~/mnt/s3
@@ -81,23 +81,23 @@ mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share ~/mnt/s3
 USERDATA
 }
 
-resource "aws_security_group_rule" "allnodes_sg_ingress" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.cluster_sg.id
-  security_group_id        = aws_security_group.allnodes-sg.id
-}
+# resource "aws_security_group_rule" "allnodes_sg_ingress" {
+#   type                     = "ingress"
+#   from_port                = 0
+#   to_port                  = 0
+#   protocol                 = "-1"
+#   source_security_group_id = aws_security_group.cluster_sg.id
+#   security_group_id        = aws_security_group.allnodes-sg.id
+# }
 
-resource "aws_security_group_rule" "allnodes_sg_egress" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.allnodes-sg.id
-}
+# resource "aws_security_group_rule" "allnodes_sg_egress" {
+#   type              = "egress"
+#   from_port         = 0
+#   to_port           = 0
+#   protocol          = "-1"
+#   cidr_blocks       = ["0.0.0.0/0"]
+#   security_group_id = aws_security_group.allnodes-sg.id
+# }
 
 resource "aws_launch_template" "app_node" {
   instance_type          = "t3.medium"
@@ -105,7 +105,7 @@ resource "aws_launch_template" "app_node" {
   name                   = "app_node_launch_template"
   image_id               = "ami-09af799f87c7601fa"
   user_data              = base64encode(local.eks-app-node-userdata)
-  vpc_security_group_ids = [aws_security_group.allnodes-sg.id]
+  # vpc_security_group_ids = [aws_security_group.allnodes-sg.id]
   tag_specifications {
     resource_type = "instance"
     tags = {
