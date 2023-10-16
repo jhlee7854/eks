@@ -1,7 +1,7 @@
 resource "aws_eks_addon" "vpc-cni" {
   cluster_name                = aws_eks_cluster.eks_cluster.name
   addon_name                  = "vpc-cni"
-  addon_version               = "v1.15.0-eksbuild.2"
+  addon_version               = "v1.12.6-eksbuild.2"
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   preserve                    = true
@@ -12,7 +12,7 @@ resource "aws_eks_addon" "vpc-cni" {
 resource "aws_eks_addon" "kube-proxy" {
   cluster_name  = aws_eks_cluster.eks_cluster.name
   addon_name    = "kube-proxy"
-  addon_version = "v1.28.2-eksbuild.2"
+  addon_version = "v1.27.1-eksbuild.1"
 }
 
 resource "aws_eks_addon" "coredns" {
@@ -20,5 +20,5 @@ resource "aws_eks_addon" "coredns" {
   cluster_name         = aws_eks_cluster.eks_cluster.name
   addon_name           = "coredns"
   configuration_values = "{\"replicaCount\":2,\"resources\":{\"limits\":{\"memory\":\"170Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"70Mi\"}}}"
-  addon_version        = "v1.10.1-eksbuild.4"
+  addon_version        = "v1.10.1-eksbuild.1"
 }
