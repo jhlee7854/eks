@@ -74,8 +74,8 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 sudo /etc/eks/bootstrap.sh '${aws_eks_cluster.eks_cluster.name}' --apiserver-endpoint '${aws_eks_cluster.eks_cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks_cluster.certificate_authority[0].data}'
 wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
 sudo yum install -y ./mount-s3.rpm
-mkdir -p ~/mnt/s3
-mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share ~/mnt/s3
+mkdir -p /eks-share/mnt/s3
+mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share /eks-share/mnt/s3 --allow-delete --allow-delete --allow-root
 
 --==MYBOUNDARY==--
 USERDATA
