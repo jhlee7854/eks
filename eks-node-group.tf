@@ -75,7 +75,7 @@ sudo /etc/eks/bootstrap.sh '${aws_eks_cluster.eks_cluster.name}' --apiserver-end
 wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
 sudo yum install -y ./mount-s3.rpm
 mkdir -p /eks-share/mnt/s3
-mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share /eks-share/mnt/s3 --allow-delete --allow-other --allow-root
+mount-s3 arn:aws:s3:ap-northeast-2:318374019075:eks-share /eks-share/mnt/s3 --allow-delete --allow-other
 
 --==MYBOUNDARY==--
 USERDATA
