@@ -13,7 +13,7 @@ variable "env" {
 variable "eks_version" {
   type = string
   # https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-version-standard.html
-  default = "1.24"
+  default = "1.25"
 }
 
 variable "eks_public_access_cidrs" {
