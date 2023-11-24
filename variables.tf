@@ -13,7 +13,13 @@ variable "env" {
 variable "eks_version" {
   type = string
   # https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-version-standard.html
-  default = "1.26"
+  default = "1.27"
+}
+
+variable "eks_optimazed_ami_id" {
+  type = string
+  # https://ap-northeast-2.console.aws.amazon.com/systems-manager/parameters/aws/service/eks/optimized-ami/1.27/amazon-linux-2/recommended/image_id/description
+  default = "ami-066d97e5af88c37a2"
 }
 
 variable "eks_public_access_cidrs" {
