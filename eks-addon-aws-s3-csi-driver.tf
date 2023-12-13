@@ -27,7 +27,7 @@ resource "aws_iam_role" "AmazonEKS_S3_CSI_DriverRole" {
   assume_role_policy = data.aws_iam_policy_document.AmazonEKS_S3_CSI_DriverAssumeRolePolicy.json
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKS_EBS_CSI_DriverPolicy" {
+resource "aws_iam_role_policy_attachment" "AmazonEKS_S3_CSI_DriverPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3CSIDriverPolicy"
   role       = aws_iam_role.AmazonEKS_S3_CSI_DriverRole.name
 }
