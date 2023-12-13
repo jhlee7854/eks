@@ -33,7 +33,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
 }
 
 resource "aws_eks_addon" "vpc_cni" {
-  depends_on                  = [aws_eks_cluster.eks_cluster, aws_iam_openid_connect_provider.eks_cluster]
+  depends_on                  = [aws_eks_cluster.eks_cluster, aws_iam_openid_connect_provider.eks_cluster, aws_iam_role.AmazonEKSVPCCNIRole]
   cluster_name                = aws_eks_cluster.eks_cluster.name
   addon_name                  = "vpc-cni"
   addon_version               = "v1.12.6-eksbuild.2"

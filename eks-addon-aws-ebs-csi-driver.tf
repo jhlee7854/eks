@@ -33,7 +33,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEBSCSIDriverPolicy" {
 }
 
 resource "aws_eks_addon" "aws_ebs_csi_driver" {
-  depends_on                  = [aws_eks_node_group.app_node_group, aws_iam_openid_connect_provider.eks_cluster]
+  depends_on                  = [aws_eks_node_group.app_node_group, aws_iam_openid_connect_provider.eks_cluster, aws_iam_role.AmazonEKSEBSCSIDriverRole]
   cluster_name                = aws_eks_cluster.eks_cluster.name
   addon_name                  = "aws-ebs-csi-driver"
   addon_version               = "v1.25.0-eksbuild.1"
