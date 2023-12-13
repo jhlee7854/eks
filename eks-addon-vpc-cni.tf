@@ -37,6 +37,7 @@ resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.eks_cluster.name
   addon_name                  = "vpc-cni"
   addon_version               = "v1.12.6-eksbuild.2"
+  service_account_role_arn    = aws_iam_role.AmazonEKSVPCCNIRole.arn
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   preserve                    = true
