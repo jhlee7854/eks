@@ -15,5 +15,8 @@ resource "aws_eks_addon" "coredns" {
   #     }
   #   }
   # })
-  addon_version = "v1.10.1-eksbuild.1"
+  addon_version               = "v1.10.1-eksbuild.1"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "PRESERVE"
+  preserve                    = true
 }
