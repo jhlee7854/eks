@@ -41,4 +41,8 @@ resource "aws_eks_addon" "vpc_cni" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   preserve                    = true
+
+  timeouts {
+    create = "10m"
+  }
 }

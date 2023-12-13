@@ -19,4 +19,8 @@ resource "aws_eks_addon" "coredns" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   preserve                    = true
+
+  timeouts {
+    create = "10m"
+  }
 }
