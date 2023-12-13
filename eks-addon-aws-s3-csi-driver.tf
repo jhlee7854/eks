@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "AmazonEKS_S3_CSI_DriverAssumeRolePolicy" {
+data "aws_iam_policy_document" "AmazonEKSS3CSIDriverAssumeRolePolicy" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
@@ -22,14 +22,47 @@ data "aws_iam_policy_document" "AmazonEKS_S3_CSI_DriverAssumeRolePolicy" {
   }
 }
 
-resource "aws_iam_role" "AmazonEKS_S3_CSI_DriverRole" {
-  name               = "${var.project_name}-${var.env}-AmazonEKS_S3_CSI_DriverRole"
-  assume_role_policy = data.aws_iam_policy_document.AmazonEKS_S3_CSI_DriverAssumeRolePolicy.json
+resource "aws_iam_role" "AmazonEKSS3CSIDriverRole" {
+  name               = "${var.project_name}-${var.env}-AmazonEKSS3CSIDriverRole"
+  assume_role_policy = data.aws_iam_policy_document.AmazonEKSS3CSIDriverAssumeRolePolicy.json
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKS_S3_CSI_DriverPolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3CSIDriverPolicy"
-  role       = aws_iam_role.AmazonEKS_S3_CSI_DriverRole.name
+resource "aws_iam_policy" "AmazonEKSS3CSIDriverPolicy" {
+  name        = "${var.project_name}-${var.env}-AmazonEKSS3CSIDriverPolicy"
+  description = "${var.project_name}-${var.env}-AmazonEKSS3CSIDriverPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "MountpointFullBucketAccess"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::eks-share"
+        ]
+      },
+      {
+        Sid    = "MountpointFullObjectAccess"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:AbortMultipartUpload",
+          "s3:DeleteObject"
+        ]
+        Resource = [
+          "arn:aws:s3:::eks-share/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEKSS3CSIDriverPolicy" {
+  policy_arn = aws_iam_policy.AmazonEKSS3CSIDriverPolicy.arn
+  role       = aws_iam_role.AmazonEKSS3CSIDriverRole.name
 }
 
 resource "aws_eks_addon" "aws-mountpoint-s3-csi-driver" {

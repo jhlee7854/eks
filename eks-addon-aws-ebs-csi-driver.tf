@@ -22,14 +22,14 @@ data "aws_iam_policy_document" "AmazonEKSEBSCSIDriverAssumeRolePolicy" {
   }
 }
 
-resource "aws_iam_role" "AmazonEKS_EBS_CSI_DriverRole" {
-  name               = "${var.project_name}-${var.env}-AmazonEKS_EBS_CSI_DriverRole"
+resource "aws_iam_role" "AmazonEKSEBSCSIDriverRole" {
+  name               = "${var.project_name}-${var.env}-AmazonEKSEBSCSIDriverRole"
   assume_role_policy = data.aws_iam_policy_document.AmazonEKSEBSCSIDriverAssumeRolePolicy.json
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKS_EBS_CSI_DriverPolicy" {
+resource "aws_iam_role_policy_attachment" "AmazonEBSCSIDriverPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  role       = aws_iam_role.AmazonEKS_EBS_CSI_DriverRole.name
+  role       = aws_iam_role.AmazonEKSEBSCSIDriverRole.name
 }
 
 resource "aws_eks_addon" "aws_ebs_csi_driver" {
