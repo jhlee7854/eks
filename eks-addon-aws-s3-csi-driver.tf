@@ -73,4 +73,8 @@ resource "aws_eks_addon" "aws-mountpoint-s3-csi-driver" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   preserve                    = true
+
+  timeouts {
+    create = "10m"
+  }
 }
