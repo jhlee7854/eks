@@ -1,5 +1,5 @@
-resource "aws_iam_role" "iam_role_eks_node_group" {
-  name = "${var.project_name}-${var.env}-eks-node-group-role"
+resource "aws_iam_role" "AmazonEKSNodeGroupRole" {
+  name = "${var.project_name}-${var.env}-AmazonEKSNodeGroupRole"
 
   assume_role_policy = jsonencode({
     Statement = [{
@@ -13,53 +13,14 @@ resource "aws_iam_role" "iam_role_eks_node_group" {
   })
 }
 
-resource "aws_iam_role_policy" "iam_role_policy_s3" {
-  name = "s3_policy"
-  role = aws_iam_role.iam_role_eks_node_group.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "MountpointFullBucketAccess"
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::eks-share"
-        ]
-      },
-      {
-        Sid    = "MountpointFullObjectAccess"
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:AbortMultipartUpload",
-          "s3:DeleteObject"
-        ]
-        Resource = [
-          "arn:aws:s3:::eks-share/*"
-        ]
-      }
-    ]
-  })
-}
-
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.iam_role_eks_node_group.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.iam_role_eks_node_group.name
+  role       = aws_iam_role.AmazonEKSNodeGroupRole.name
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.iam_role_eks_node_group.name
+  role       = aws_iam_role.AmazonEKSNodeGroupRole.name
 }
 
 locals {
@@ -72,10 +33,6 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash -xe
 sudo /etc/eks/bootstrap.sh '${aws_eks_cluster.eks_cluster.name}' --apiserver-endpoint '${aws_eks_cluster.eks_cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks_cluster.certificate_authority[0].data}'
-wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.rpm
-sudo yum install -y ./mount-s3.rpm
-mkdir -p /eks-share/mnt/s3
-mount-s3 eks-share /eks-share/mnt/s3 --allow-delete --allow-other
 
 --==MYBOUNDARY==--
 USERDATA
@@ -100,11 +57,11 @@ USERDATA
 # }
 
 resource "aws_launch_template" "app_node" {
-  instance_type          = "t3.medium"
-  key_name               = "mountpoint-s3"
-  name                   = "app_node_launch_template"
-  image_id               = var.eks_optimazed_ami_id
-  user_data              = base64encode(local.eks-app-node-userdata)
+  instance_type = "t3.medium"
+  key_name      = "mountpoint-s3"
+  name          = "app_node_launch_template"
+  image_id      = var.eks_optimazed_ami_id
+  user_data     = base64encode(local.eks-app-node-userdata)
   # vpc_security_group_ids = [aws_security_group.allnodes-sg.id]
   tag_specifications {
     resource_type = "instance"
@@ -120,7 +77,7 @@ resource "aws_launch_template" "app_node" {
 resource "aws_eks_node_group" "app_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "app-node-group"
-  node_role_arn   = aws_iam_role.iam_role_eks_node_group.arn
+  node_role_arn   = aws_iam_role.AmazonEKSNodeGroupRole.arn
   subnet_ids = [
     aws_subnet.private_subnet_01.id,
     aws_subnet.private_subnet_02.id
@@ -145,7 +102,6 @@ resource "aws_eks_node_group" "app_node_group" {
   # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
   depends_on = [
     aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
   ]
 

@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "assume_role" {
+data "aws_iam_policy_document" "AmazonEKSClusterAssumeRolePolicy" {
   statement {
     effect = "Allow"
 
@@ -11,9 +11,9 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_role" "iam_role_eks" {
-  name               = "${var.project_name}-${var.env}-eks-cluster-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+resource "aws_iam_role" "AmazonEKSClusterRole" {
+  name               = "${var.project_name}-${var.env}-AmazonEKSClusterRole"
+  assume_role_policy = data.aws_iam_policy_document.AmazonEKSClusterAssumeRolePolicy.json
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonEKSClusterPolicy" {
@@ -48,7 +48,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSVPCResourceController" {
 
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "${var.project_name}-${var.env}"
-  role_arn = aws_iam_role.iam_role_eks.arn
+  role_arn = aws_iam_role.AmazonEKSClusterRole.arn
 
   # TODO: Enabling Control Plane Logging
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#enabling-control-plane-logging
@@ -61,7 +61,7 @@ resource "aws_eks_cluster" "eks_cluster" {
     # endpoint_public_access  = true
     # public_access_cidrs     = var.eks_public_access_cidrs
     # security_group_ids = [aws_security_group.cluster_sg.id]
-    subnet_ids         = [aws_subnet.private_subnet_01.id, aws_subnet.private_subnet_02.id]
+    subnet_ids = [aws_subnet.private_subnet_01.id, aws_subnet.private_subnet_02.id]
   }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Cluster handling.
