@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 
 resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.AmazonEKSNodeGroupRole
+  role       = aws_iam_role.AmazonEKSNodeGroupRole.name
 }
 
 locals {
